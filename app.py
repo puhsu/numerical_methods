@@ -107,7 +107,7 @@ def render_plots_frame(value):
     pdf_id = 'probability-density-' + value
     shows_id = 'shows-' + value
     threshold_id = 'threshold-' + value
-    plan_id = 'plan-' + value
+    plan_id = 'diff-' + value
 
     return [
         html.Div([
@@ -308,6 +308,76 @@ def plot_theshold_params(
             title='Threshold',
             xaxis='Time',
             yaxis='Threshold value',
+        )
+
+
+@app.callback(
+    Output('diff-file', 'figure'),
+    [Input('rho-file', 'contents'),
+     Input('plan-file', 'contents'),
+     Input('traffic-file', 'contents'),
+     Input('cauchy-x0', 'value'),
+     Input('cauchy-y0', 'value'),
+     Input('cauchy-beta', 'value'),
+     Input('cauchy-tau', 'value')]
+)
+def plot_diff_file(
+        pdf_file, plan_file, traffic_file,
+        x0, y0, beta, tau
+):
+    if pdf_file and plan_file and traffic_file:
+        pdf = util.parse_contents(pdf_file)
+        plan = util.parse_contents(plan_file)
+        traffic = util.parse_contents(traffic_file)
+
+        real_shows, threshold = solve_eqations(pdf, plan, traffic, x0, y0, beta, tau)
+
+        diff = plan
+        diff[:, 1] -= real_shows[:, 1]
+        return util.plot_lines(
+            [diff],
+            ['Difference'],
+            title='Value',
+            xaxis='Time',
+            yaxis='S(t) - x(t)',
+        )
+
+@app.callback(
+    Output('diff-params', 'figure'),
+    [Input('rho-a', 'value'),
+     Input('rho-b', 'value'),
+     Input('plan-m', 'value'),
+     Input('plan-n', 'value'),
+     Input('plan-k', 'value'),
+     Input('traffic-p', 'value'),
+     Input('traffic-q', 'value'),
+     Input('traffic-r', 'value'),
+     Input('cauchy-x0', 'value'),
+     Input('cauchy-y0', 'value'),
+     Input('cauchy-beta', 'value'),
+     Input('cauchy-tau', 'value')]
+)
+def plot_diff_params(
+        pdf_a, pdf_b,
+        plan_m, plan_n, plan_k,
+        traffic_p, traffic_q, traffic_r,
+        x0, y0, beta, tau
+):
+    if pdf_a and pdf_b and plan_m and plan_n and plan_k and traffic_p and traffic_q and traffic_r:
+        pdf = util.tabulate_probability_density(pdf_a, pdf_b)
+        plan = util.tabulate_plan(plan_m, plan_n, plan_k)
+        traffic = util.tabulate_traffic(traffic_p, traffic_p, traffic_r)
+
+        real_shows, threshold = solve_eqations(pdf, plan, traffic, x0, y0, beta, tau)
+
+        diff = plan
+        diff[:, 1] -= real_shows[:, 1]
+        return util.plot_lines(
+            [diff],
+            ['Difference'],
+            title='Value',
+            xaxis='Time',
+            yaxis='S(t) - x(t)',
         )
 
 
