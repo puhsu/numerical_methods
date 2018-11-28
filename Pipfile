@@ -7,9 +7,10 @@ name = "pypi"
 dash = "*"
 dash-html-components = "*"
 dash-core-components = "*"
-pandas-datareader = "*"
 
 [dev-packages]
+matplotlib = "*"
+scipy = "*"
 
 [requires]
 python_version = "3.6"

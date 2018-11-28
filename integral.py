@@ -5,10 +5,20 @@ import numpy as np
 
 
 def integrate(func):
+    """
+    Compute integral of a function using
+    trapezoidal rule.
+    Args:
+      func (numpy.ndarray) grid function with x, y in columns
+    Return:
+      integral (float)
+    """
     x = func[:, 0]
     y = func[:, 1]
-    area = np.sum(y) * (x[-1] - x[0]) / x.size
-    return area
+
+    dx = x[1:] - x[:-1]
+    sy = y[1:] + y[:-1]
+    return np.sum(dx * sy) / 2
 
 
 def compute(func):
