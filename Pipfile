@@ -7,6 +7,7 @@ name = "pypi"
 dash = "*"
 dash-html-components = "*"
 dash-core-components = "*"
+gunicorn = "*"
 
 [dev-packages]
 matplotlib = "*"
