@@ -12,6 +12,7 @@ gunicorn = "*"
 [dev-packages]
 matplotlib = "*"
 scipy = "*"
+itermplot = "*"
 
 [requires]
 python_version = "3.6"
