@@ -342,6 +342,7 @@ def plot_diff_file(
             yaxis='S(t) - x(t)',
         )
 
+
 @app.callback(
     Output('diff-params', 'figure'),
     [Input('rho-a', 'value'),
