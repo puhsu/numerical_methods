@@ -1,17 +1,8 @@
-"""
-Differential equations solver module.
-Used for computing threshold and
-shows plan
+"""Differential equations solver module. Used for computing threshold and shows
+plan. Also has some auxilary functions used in the process of solving system of
+differential equaitons.
 """
 import numpy as np
-
-
-def compute(*, u, z, s, x0, y0, tau, beta):
-    x = np.linspace(0, 10, s.shape[0])
-
-    real_shows = np.dstack([x, np.sqrt(x) * 10]).reshape(-1, 2)
-    threshold = np.dstack([x, np.sin(x)]).reshape(-1, 2)
-    return real_shows, threshold
 
 
 def runge_kutta4(funcs, t0, tN, x0, grid_size=100):
@@ -21,12 +12,12 @@ def runge_kutta4(funcs, t0, tN, x0, grid_size=100):
     arguments and initial condition using Runge–Kutta 4th order method.
 
     Args:
-        func: vector of callable objects representing functions from system of
+        func (ndarray): vector of callable objects representing functions from system of
             equations in form of f(t, x)
-        t0: lower limit of interval
-        tN: upper limit of interval
-        x0: initial conditions, vector of x(t0)
-        grid_size: number of grid nodes
+        t0 (float): lower limit of interval
+        tN (float): upper limit of interval
+        x0 (ndarray): initial conditions, vector of x(t0)
+        grid_size (int): number of grid nodes
 
     Returns:
         Something

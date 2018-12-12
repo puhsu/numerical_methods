@@ -1,17 +1,20 @@
-"""
-Integration module.
+"""Integration module.
 """
 import numpy as np
 
 
 def integrate(func):
-    """
-    Compute integral of a function using
-    trapezoidal rule.
+    """Computes integral of a function with trapezodial rule.
+
+    Finds integral of a given grid function numerically with accumulated error
+    of O(h^2), where h is a step size in grid.
+
     Args:
-      func (numpy.ndarray) grid function with x, y in columns
-    Return:
-      integral (float)
+        func: numpy.ndarray storing grid function with x, y in columns
+
+    Returns:
+        integral value as a single float number
+
     """
     x = func[:, 0]
     y = func[:, 1]
@@ -22,8 +25,7 @@ def integrate(func):
 
 
 def compute(func):
-    """
-    Find integral of a function.
+    """Finds integral of a function.
     Return: g(t) = ∫_0^t func(x) dx (tabulated)
     """
     x = func[:, 0]

@@ -1,5 +1,6 @@
 import base64
 import io
+import functools
 
 import numpy as np
 import dash_core_components as dcc
@@ -83,3 +84,12 @@ def plot_lines(lines, names, title, xaxis=None, yaxis=None):
             'yaxis': {'title': yaxis or ''},
         }
     }
+
+##############################
+# Other utils
+##############################
+
+
+class vectorize(np.vectorize):
+    def __get__(self, obj, objtype):
+        return functools.partial(self.__call__, obj)

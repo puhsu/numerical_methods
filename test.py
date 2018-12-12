@@ -87,13 +87,8 @@ def plot_interpolation():
             x = np.linspace(-2, 2, n)
             y = func(x)
             plt.scatter(x, y, color=c, marker='o', zorder=z)
-
-            coefs = interpolation.interpolate(
-                np.dstack([x, y]).reshape(-1, 2)
-            )
-
-            x_spline, y_spline = interpolation.get_spline_хy(coefs, x)
-            plt.plot(x_spline, y_spline, color=c, linestyle='--', label=f'N={n}', zorder=z)
+            f = interpolation.Spline(np.dstack([x, y]).reshape(-1, 2))
+            plt.plot(x_func, f(x_func), color=c, linestyle='--', label=f'N={n}', zorder=z)
 
         plt.title('Cubic spline interpolation of f(x)')
         plt.grid(True)
@@ -101,7 +96,7 @@ def plot_interpolation():
 
         # plot E(x) = f(x) - S(x)
         plt.subplot(122)
-        plt.plot(x_func, y_func - y_spline)
+        plt.plot(x_func, y_func - f(x_func))
         plt.grid(True)
         plt.title('Error E(x) = f(x) - S(x)')
 
@@ -206,5 +201,6 @@ def plot_equation_cauchy_error():
 
 
 if __name__ == "__main__":
-    plot_equation_vector_field()
-    plot_equation_cauchy_error()
+    # plot_equation_vector_field()
+    # plot_equation_cauchy_error()
+    plot_interpolation()
