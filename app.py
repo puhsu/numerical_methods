@@ -3,15 +3,16 @@ Main file of GUI application. All functions, related to
 rendering are in this module. This file is basically
 describes frontend of =adserver=
 """
+import json
+
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-
+import numpy as np
 from dash.dependencies import Input, Output
 
 import util
-import integral
-import equation
+import server
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(
@@ -48,6 +49,8 @@ app.layout = html.Div([
     html.Hr(),
     html.H4('Plots'),
     html.Div(id='plots-container'),
+
+    html.Div(id='pdf_intermediate', style={'display': 'none'})
 ])
 
 
@@ -82,8 +85,8 @@ def render_function_input(value):
     if value == 'params':
         return html.Div([
             html.P('Parameters for ρ(x) = ax(b - x)'),
-            util.get_numeric_input('rho-a', 'a'),
-            util.get_numeric_input('rho-b', 'b'),
+            util.get_numeric_input('pdf-a', 'a'),
+            util.get_numeric_input('pdf-b', 'b'),
 
             html.P('Parameters for S(t) = mt + n·sin(kt)'),
             util.get_numeric_input('plan-m', 'm'),
@@ -149,8 +152,8 @@ def plot_pdf_file(rho_file):
 
 @app.callback(
     Output('probability-density-params', 'figure'),
-    [Input('rho-a', 'value'),
-     Input('rho-b', 'value')]
+    [Input('pdf-a', 'value'),
+     Input('pdf-b', 'value')]
 )
 def plot_pdf_params(rho_a, rho_b):
     if rho_a and rho_b:
@@ -159,20 +162,7 @@ def plot_pdf_params(rho_a, rho_b):
             ['PDF'],
             'Probability density',
         )
-
-
-def solve_eqations(
-        pdf, plan, traffic,
-        x0, y0, beta, tau,
-):
-    pdf_integral = integral.compute(pdf)
-    real_shows, threshold = equation.compute(
-        u=pdf_integral,
-        z=traffic,
-        s=plan,
-        x0=x0, y0=y0, beta=beta, tau=tau,
-    )
-    return real_shows, threshold
+    return {}
 
 
 @app.callback(
@@ -194,7 +184,7 @@ def plot_shows_file(
         plan = util.parse_contents(plan_file)
         traffic = util.parse_contents(traffic_file)
 
-        real_shows, threshold = solve_eqations(pdf, plan, traffic, x0, y0, beta, tau)
+        real_shows, threshold = server.solve(pdf, plan, traffic, x0, y0, beta, tau)
 
         return util.plot_lines(
             [real_shows, plan, traffic],
@@ -207,8 +197,8 @@ def plot_shows_file(
 
 @app.callback(
     Output('shows-params', 'figure'),
-    [Input('rho-a', 'value'),
-     Input('rho-b', 'value'),
+    [Input('pdf-a', 'value'),
+     Input('pdf-b', 'value'),
      Input('plan-m', 'value'),
      Input('plan-n', 'value'),
      Input('plan-k', 'value'),
@@ -221,17 +211,19 @@ def plot_shows_file(
      Input('cauchy-tau', 'value')]
 )
 def plot_shows_params(
-        rho_a, rho_b,
+        pdf_a, pdf_b,
         plan_m, plan_n, plan_k,
         traffic_p, traffic_q, traffic_r,
         x0, y0, beta, tau
 ):
-    if rho_a and rho_b and plan_m and plan_n and plan_k and traffic_p and traffic_q and traffic_r:
-        pdf = util.tabulate_probability_density(rho_a, rho_b)
-        plan = util.tabulate_plan(plan_m, plan_n, plan_k)
-        traffic = util.tabulate_traffic(traffic_p, traffic_q, traffic_r)
+    if (pdf_a and pdf_b and plan_m and plan_n and plan_k and traffic_p and traffic_q and traffic_r
+       and x0 is not None and y0 is not None and beta and tau):
 
-        real_shows, threshold = solve_eqations(pdf, plan, traffic, x0, y0, beta, tau)
+        pdf = util.tabulate_probability_density(pdf_a, pdf_b)
+        plan = util.tabulate_plan(plan_m, plan_n, plan_k, tau)
+        traffic = util.tabulate_traffic(traffic_p, traffic_p, traffic_r, tau)
+
+        real_shows, threshold = server.solve(pdf, plan, traffic, x0, y0, beta, tau)
 
         return util.plot_lines(
             [real_shows, plan, traffic],
@@ -240,6 +232,7 @@ def plot_shows_params(
             xaxis='Time',
             yaxis='Shows count',
         )
+    return {}
 
 
 @app.callback(
@@ -261,7 +254,7 @@ def plot_threshold_file(
         plan = util.parse_contents(plan_file)
         traffic = util.parse_contents(traffic_file)
 
-        real_shows, threshold = solve_eqations(pdf, plan, traffic, x0, y0, beta, tau)
+        real_shows, threshold = server.solve(pdf, plan, traffic, x0, y0, beta, tau)
 
         # shows plot
         return util.plot_lines(
@@ -275,8 +268,8 @@ def plot_threshold_file(
 
 @app.callback(
     Output('threshold-params', 'figure'),
-    [Input('rho-a', 'value'),
-     Input('rho-b', 'value'),
+    [Input('pdf-a', 'value'),
+     Input('pdf-b', 'value'),
      Input('plan-m', 'value'),
      Input('plan-n', 'value'),
      Input('plan-k', 'value'),
@@ -294,12 +287,14 @@ def plot_theshold_params(
         traffic_p, traffic_q, traffic_r,
         x0, y0, beta, tau
 ):
-    if pdf_a and pdf_b and plan_m and plan_n and plan_k and traffic_p and traffic_q and traffic_r:
-        pdf = util.tabulate_probability_density(pdf_a, pdf_b)
-        plan = util.tabulate_plan(plan_m, plan_n, plan_k)
-        traffic = util.tabulate_traffic(traffic_p, traffic_p, traffic_r)
+    if (pdf_a and pdf_b and plan_m and plan_n and plan_k and traffic_p and traffic_q and traffic_r
+       and x0 is not None and y0 is not None and beta and tau):
 
-        real_shows, threshold = solve_eqations(pdf, plan, traffic, x0, y0, beta, tau)
+        pdf = util.tabulate_probability_density(pdf_a, pdf_b)
+        plan = util.tabulate_plan(plan_m, plan_n, plan_k, tau)
+        traffic = util.tabulate_traffic(traffic_p, traffic_p, traffic_r, tau)
+
+        real_shows, threshold = server.solve(pdf, plan, traffic, x0, y0, beta, tau)
 
         # shows plot
         return util.plot_lines(
@@ -309,6 +304,7 @@ def plot_theshold_params(
             xaxis='Time',
             yaxis='Threshold value',
         )
+    return {}
 
 
 @app.callback(
@@ -330,7 +326,7 @@ def plot_diff_file(
         plan = util.parse_contents(plan_file)
         traffic = util.parse_contents(traffic_file)
 
-        real_shows, threshold = solve_eqations(pdf, plan, traffic, x0, y0, beta, tau)
+        real_shows, threshold = server.solve(pdf, plan, traffic, x0, y0, beta, tau)
 
         diff = plan
         diff[:, 1] -= real_shows[:, 1]
@@ -345,8 +341,8 @@ def plot_diff_file(
 
 @app.callback(
     Output('diff-params', 'figure'),
-    [Input('rho-a', 'value'),
-     Input('rho-b', 'value'),
+    [Input('pdf-a', 'value'),
+     Input('pdf-b', 'value'),
      Input('plan-m', 'value'),
      Input('plan-n', 'value'),
      Input('plan-k', 'value'),
@@ -364,15 +360,18 @@ def plot_diff_params(
         traffic_p, traffic_q, traffic_r,
         x0, y0, beta, tau
 ):
-    if pdf_a and pdf_b and plan_m and plan_n and plan_k and traffic_p and traffic_q and traffic_r:
-        pdf = util.tabulate_probability_density(pdf_a, pdf_b)
-        plan = util.tabulate_plan(plan_m, plan_n, plan_k)
-        traffic = util.tabulate_traffic(traffic_p, traffic_p, traffic_r)
+    if (pdf_a and pdf_b and plan_m and plan_n and plan_k and traffic_p and traffic_q and traffic_r
+       and x0 is not None and y0 is not None and beta and tau):
 
-        real_shows, threshold = solve_eqations(pdf, plan, traffic, x0, y0, beta, tau)
+        pdf = util.tabulate_probability_density(pdf_a, pdf_b)
+        plan = util.tabulate_plan(plan_m, plan_n, plan_k, tau)
+        traffic = util.tabulate_traffic(traffic_p, traffic_p, traffic_r, tau)
+
+        real_shows, threshold = server.solve(pdf, plan, traffic, x0, y0, beta, tau)
 
         diff = plan
         diff[:, 1] -= real_shows[:, 1]
+        diff[:, 1] = np.abs(diff[:, 1])
         return util.plot_lines(
             [diff],
             ['Difference'],
@@ -380,7 +379,9 @@ def plot_diff_params(
             xaxis='Time',
             yaxis='S(t) - x(t)',
         )
+    return {
+    }
 
 
 if __name__ == '__main__':
-    app.run_server(host='0.0.0.0', port=80)
+    app.run_server(host='localhost', debug=True)

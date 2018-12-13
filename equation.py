@@ -5,7 +5,7 @@ differential equaitons.
 import numpy as np
 
 
-def runge_kutta4(funcs, t0, tN, x0, grid_size=100):
+def runge_kutta4(funcs, t0, tN, x0, grid_size=99):
     """Solves Cauchy problem.
 
     Finds solution to cauchy problem given vector of functions boundaries for
@@ -34,5 +34,11 @@ def runge_kutta4(funcs, t0, tN, x0, grid_size=100):
         k3 = step_size * np.array([f(t + step_size / 2, x + k2 / 2) for f in funcs])
         k4 = step_size * np.array([f(t + step_size, x + k3) for f in funcs])
         solutions[i] = x + (k1 + 2 * k2 + 2 * k3 + k4) / 6
+
+        # problem specifics
+        if solutions[i, 1] < 0:
+            solutions[i, 1] = 0
+        if solutions[i, 1] > 1:
+            solutions[i, 1] = 1
 
     return grid, solutions

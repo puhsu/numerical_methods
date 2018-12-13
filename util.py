@@ -57,14 +57,14 @@ def tabulate_probability_density(a, b, points=100):
     return np.dstack([x, fx]).reshape(points, -1)
 
 
-def tabulate_plan(m, n, k, points=100):
-    x = np.linspace(0, 10, points)
+def tabulate_plan(m, n, k, tau, points=100):
+    x = np.linspace(0, tau, points)
     fx = m * x + n * np.sin(k * x)
     return np.dstack([x, fx]).reshape(points, -1)
 
 
-def tabulate_traffic(p, q, r, points=100):
-    x = np.linspace(0, 10, points)
+def tabulate_traffic(p, q, r, tau, points=100):
+    x = np.linspace(0, tau, points)
     fx = p * x + q * np.cos(r * x)
     return np.dstack([x, fx]).reshape(points, -1)
 

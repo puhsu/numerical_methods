@@ -3,7 +3,7 @@
 import numpy as np
 
 
-def integrate(func):
+def integrate(grid_function):
     """Computes integral of a function with trapezodial rule.
 
     Finds integral of a given grid function numerically with accumulated error
@@ -16,21 +16,28 @@ def integrate(func):
         integral value as a single float number
 
     """
-    x = func[:, 0]
-    y = func[:, 1]
+    x = grid_function[:, 0]
+    y = grid_function[:, 1]
 
     dx = x[1:] - x[:-1]
     sy = y[1:] + y[:-1]
     return np.sum(dx * sy) / 2
 
 
-def compute(func):
-    """Finds integral of a function.
-    Return: g(t) = ∫_0^t func(x) dx (tabulated)
-    """
-    x = func[:, 0]
+def definite_integral(f, low, high, grid_size=100):
+    """Finds definite integral of a function.
 
-    res = []
-    for i in range(func.shape[0]):
-        res.append((x[i], integrate(func[i:])))
-    return np.array(res)
+    Given a callable compute it's definite integral on the segment
+    set by low and high.
+
+    Args:
+        f (callable): any callable object representing a function
+        low (float): lower limit for integral
+        high (float): upper limit for integral
+    """
+
+    if low < 0:
+        low = 0
+    x = np.linspace(low, high, grid_size)
+    grid = np.dstack([x, f(x)]).reshape(-1, 2)
+    return integrate(grid)
