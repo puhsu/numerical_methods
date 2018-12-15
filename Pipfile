@@ -8,6 +8,8 @@ dash = "*"
 dash-html-components = "*"
 dash-core-components = "*"
 gunicorn = "*"
+sphinx = "*"
+sphinx-rtd-theme = "*"
 
 [dev-packages]
 matplotlib = "*"
@@ -15,6 +17,7 @@ scipy = "*"
 itermplot = "*"
 ipython = "*"
 "flake8" = "*"
+sphinxcontrib-napoleon = "*"
 
 [requires]
 python_version = "3.6"

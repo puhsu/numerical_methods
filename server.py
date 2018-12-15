@@ -1,4 +1,7 @@
-"""Main ad server logic"""
+"""Main ad server logic. Handles solution of
+system of differential equations. Contains
+criterions used to compare functions
+"""
 import numpy as np
 
 import interpolation
@@ -15,7 +18,10 @@ def correction_function(traffic, plan, beta, x):
         beta (float): parameter
         x (float): x(t) value
     """
-    return beta * (x - traffic)
+
+    diff_plan = (x - plan)
+
+    return beta * diff_plan
 
 
 def solve(users_pdf, plan, traffic, x0, y0, beta, tau):
@@ -23,8 +29,8 @@ def solve(users_pdf, plan, traffic, x0, y0, beta, tau):
 
     Computes threshold y(t) and shows x(t) functions by
     solving a system of differential equations:
-        dx / dt = traffic'(t) integral_y^1(users_pdf(w)) dw
-        dy / dt = correction_function(traffic, plan, beta, x)
+    dx / dt = traffic'(t) integral_y^1(users_pdf(w)) dw
+    dy / dt = correction_function(traffic, plan, beta, x)
 
     Args:
         users_pdf (ndarray): grid function representing distribution of the audience for
@@ -55,3 +61,48 @@ def solve(users_pdf, plan, traffic, x0, y0, beta, tau):
     threshold = np.dstack([grid, solutions[:, 1]]).reshape(-1, 2)
 
     return shows, threshold
+
+
+def crit1(real_shows, threshold, users_pdf, x0, tau):
+    """Computes accuracy of hitting target.
+
+    This criterion measures the proportion of ads shown to a non-target audience
+    relative to the total number of impressions.
+
+    Args:
+        real_shows (ndarray): Grid function x(t), which is a found solution
+        threshold (ndarray): Grid function y(t), which is a found solution
+        users_pdf (ndarray): Grid function representing probability density
+        x0 (float): Initial condition
+        tau (float): Time period
+
+    Returns:
+        Value in [0, 1], lower is better
+    """
+    x = interpolation.Spline(real_shows)
+    y = interpolation.Spline(threshold)
+    r = interpolation.Spline(users_pdf)
+
+    @np.vectorize
+    def under_integral(t):
+        return x(t, df=True) * integral.definite_integral(lambda w: w * r(w), y(t), 1)
+
+    return 1 - (integral.definite_integral(under_integral, 0, tau)) / (x(tau) - x0)
+
+
+def crit2(plan, real_shows):
+    """Computes second critrion.
+
+    This criterion measures the accuracy of the condition by the number of shows.
+
+    Args:
+        plan (ndarray): Grid function S(t)
+        real_shows (ndarray): Grid function x(t)
+
+    Returns:
+        Value of a criterion, lower is better
+    """
+    total_plan = plan[-1, 1]
+    total_shows = real_shows[-1, 1]
+
+    return np.abs(total_plan - total_shows) / total_plan

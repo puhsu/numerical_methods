@@ -24,7 +24,7 @@ def integrate(grid_function):
     return np.sum(dx * sy) / 2
 
 
-def definite_integral(f, low, high, grid_size=100):
+def definite_integral(f, low, high, grid_size=50):
     """Finds definite integral of a function.
 
     Given a callable compute it's definite integral on the segment

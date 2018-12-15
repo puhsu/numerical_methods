@@ -57,3 +57,12 @@ a {
     background-color: #FFD2D2;
 }
 
+.criterions {
+    text-align:center;
+    font-size: 48px;
+    line-height: 0;
+    padding: 15% 0;
+    display: block;
+    font-family: Helvetica;
+    font-weight: lighter;
+}

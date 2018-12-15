@@ -1,3 +1,4 @@
+"""Utility functions. Mostly for building up UI"""
 import base64
 import io
 import functools
@@ -12,13 +13,14 @@ import dash_html_components as html
 ##############################
 def get_numeric_input(input_id, placeholder):
     return dcc.Input(
-        input_id,
+        id=input_id,
         placeholder=placeholder,
         type='number',
         inputmode='numeric',
         step=0.1,
         debounce=True,
-        pattern=r'^[0-9]*\.{0,1}[0-9]*$'
+        autocomplete=False,
+        className='mgn-l',
     )
 
 
@@ -41,7 +43,6 @@ def parse_contents(contents):
     content_type, content_string = contents.split(',')
     decoded = base64.b64decode(content_string)
 
-    # TODO add checks for file
     stream = io.StringIO(decoded.decode('utf-8'))
     data = np.loadtxt(
         stream,
@@ -51,19 +52,19 @@ def parse_contents(contents):
     return data
 
 
-def tabulate_probability_density(a, b, points=100):
+def tabulate_probability_density(a, b, points=50):
     x = np.linspace(0, 1, points)
     fx = a * x * (b - x)
     return np.dstack([x, fx]).reshape(points, -1)
 
 
-def tabulate_plan(m, n, k, tau, points=100):
+def tabulate_plan(m, n, k, tau, points=50):
     x = np.linspace(0, tau, points)
     fx = m * x + n * np.sin(k * x)
     return np.dstack([x, fx]).reshape(points, -1)
 
 
-def tabulate_traffic(p, q, r, tau, points=100):
+def tabulate_traffic(p, q, r, tau, points=50):
     x = np.linspace(0, tau, points)
     fx = p * x + q * np.cos(r * x)
     return np.dstack([x, fx]).reshape(points, -1)

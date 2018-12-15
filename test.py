@@ -1,3 +1,5 @@
+import argparse
+
 import numpy as np
 import scipy.integrate as si
 import matplotlib.pyplot as plt
@@ -201,6 +203,37 @@ def plot_equation_cauchy_error():
 
 
 if __name__ == "__main__":
-    # plot_equation_vector_field()
-    # plot_equation_cauchy_error()
-    plot_interpolation()
+    parser = argparse.ArgumentParser(
+        description='Tests for all numerical methods modules. Mostly building plots.'
+    )
+
+    parser.add_argument(
+        '--integral',
+        action='store_true',
+        help='Test integration module',
+    )
+
+    parser.add_argument(
+        '--interpolation',
+        action='store_true',
+        help='Test interpolation module',
+    )
+
+    parser.add_argument(
+        '--cauchy',
+        action='store_true',
+        help='Test differential equations solver',
+    )
+
+    args = parser.parse_args()
+
+    if args.integral:
+        plot_integral_error_runge()
+        plot_integral_еrror_scipy()
+
+    if args.interpolation:
+        plot_interpolation()
+        plot_equation_vector_field()
+
+    if args.cauchy:
+        plot_equation_cauchy_error()

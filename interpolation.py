@@ -62,8 +62,20 @@ class Spline(object):
 
     @util.vectorize
     def __call__(self, x, df=False):
+        """Finds value of an interpolated function at point.
+
+        Given point, or an array of points returns respective values of a
+        spline. Also can be used to find values of a spline derivative.
+
+        Args:
+            x (float or ndarray): Points at which to execute spline
+            df (bool): Compute derivative, optional parameter default to False
+
+        Returns:
+            Numpy array of spline values at x
+        """
         for i, (left, right) in enumerate(zip(self.beg, self.end)):
-            if left <= x and x <= right:
+            if left <= x and x <= right or i == len(self.beg) - 1:
                 if df:
                     return (
                         self.b[i] +
@@ -76,6 +88,7 @@ class Spline(object):
                     self.c[i] * (x - right)**2 +
                     self.d[i] * (x - right)**3
                 )
+        print(x)
 
     def _interpolate(self, grid_function):
         """Finds coefficients for spline interpolation.
